@@ -2,13 +2,6 @@
 
 A modern weather dashboard built with JavaScript ES6+ features that allows users to search for weather information, save favorite cities, and view 5-day forecasts.
 
-## Repository
-
-- **GitHub:** https://github.com/Reannn22/pemrograman_web_itera_123140022
-- **NIM:** 123140022
-- **Nama:** Reyhan Capri Moraga
-- **Praktikum:** Pemrograman Web RA
-
 ## Features
 
 ### Core Functionality
@@ -261,5 +254,3 @@ localStorage.setItem("weatherFavorites", JSON.stringify(this.#favorites));
    - Local storage integration
    - Real-time updates
    - State synchronization
-
----

@@ -272,5 +272,3 @@ function debounce(func, wait) {
 - Refresh cache (hapus semua data dan reload aplikasi)
 - Pagination daftar tugas
 - Dokumentasi dan struktur kode rapi
-
----
