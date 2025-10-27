@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="assets/logo/icon.png">
+    <title>Weather Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {}
+            }
+        }
+    </script>
+    <script>
+        // Apply theme from URL or localStorage
+        const urlParams = new URLSearchParams(window.location.search);
+        const theme = urlParams.get('theme') || localStorage.getItem('weatherDashboardTheme') || 'light';
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+        localStorage.setItem('weatherDashboardTheme', theme);
+    </script>
+    <style>
+        /* Base Styles */
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
+        }
+
+        body.dark {
+            @apply bg-gray-900 text-white;
+        }
+
+        .dark .bg-white,
+        .dark .bg-gray-50,
+        .dark .weather-card,
+        .dark [class*="bg-white"] {
+            @apply bg-gray-800 text-white border-gray-700;
+        }
+
+        .dark .bg-gray-100,
+        .dark [class*="bg-gray-100"] {
+            @apply bg-gray-700 text-gray-100;
+        }
+
+        .dark .text-gray-600 {
+            @apply text-gray-400;
+        }
+
+        .dark .text-gray-900 {
+            @apply text-white;
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+        }
+
+        /* Update Weather Card Styles */
+        .weather-card {
+            @apply bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-lg;
+            transition: all 0.3s ease;
+        }
+
+        /* Loading and Error animations */
+        #errorToast {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        /* Update spinner styles */
+        .spinner {
+            width: 56px;
+            height: 56px;
+            border: 5px solid rgba(59, 130, 246, 0.2);
+            border-top: 5px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Theme icon styles */
+        .theme-icon {
+            width: 20px;
+            height: 20px;
+            filter: brightness(0) invert(1);
+        }
+
+        /* Weather icon styles */
+        .weather-icon {
+            width: 48px;
+            height: 48px;
+        }
+
+        .dark img[src*="assets/icon/cloud"] {
+            filter: brightness(0) invert(1);
+        }
+
+        .dark img[src*="star.svg"],
+        .dark img[src*="star-fill.svg"] {
+            filter: brightness(0) invert(1);
+        }
+
+        .dark img[src*="star-fill.svg"].favorite-icon {
+            filter: invert(77%) sepia(51%) saturate(534%) hue-rotate(359deg) brightness(103%) contrast(104%);
+        }
+
+        .forecast-icon {
+            width: 32px;
+            height: 32px;
+            filter: brightness(0) saturate(100%);
+        }
+
+        .dark .forecast-icon {
+            filter: brightness(0) invert(1);
+        }
+
+        /* Favorite star icon styles */
+        .favorite-icon {
+            width: 24px;
+            height: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .favorite-icon.active,
+        img[src*="star-fill.svg"] {
+            filter: invert(77%) sepia(51%) saturate(534%) hue-rotate(359deg) brightness(103%) contrast(104%);
+        }
+
+        .dark .favorite-icon:not([src*="star-fill.svg"]) {
+            filter: brightness(0) invert(1);
+        }
+
+        .dark .favorite-icon.active {
+            filter: invert(77%) sepia(51%) saturate(534%) hue-rotate(359deg) brightness(103%) contrast(104%);
+        }
+
+        /* Autocomplete styles */
+        .autocomplete-container {
+            position: relative;
+        }
+
+        .suggestions-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            margin-top: 0.25rem;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 50;
+            display: none;
+        }
+
+        .dark .suggestions-list {
+            background: #1f2937;
+            border-color: #374151;
+        }
+
+        .suggestions-list.show {
+            display: block;
+        }
+
+        .suggestion-item {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+        }
+
+        .suggestion-item:hover {
+            background: #f3f4f6;
+        }
+
+        .dark .suggestion-item:hover {
+            background: #374151;
+        }
+
+        /* Skeleton loading animation */
+        .skeleton {
+            background: #e2e5e7;
+            background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+            background-size: 200% 100%;
+            animation: 1.5s shine linear infinite;
+        }
+
+        .dark .skeleton {
+            background: #2d3748;
+            background: linear-gradient(110deg, #2d3748 8%, #4a5568 18%, #2d3748 33%);
+            background-size: 200% 100%;
+        }
+
+        @keyframes shine {
+            to {
+                background-position-x: -200%;
+            }
+        }
+
+        /* Mobile-specific styles */
+        @media (max-width: 640px) {
+            .suggestions-list {
+                max-height: 50vh;
+            }
+
+            .weather-card {
+                @apply p-3;
+            }
+
+            .favorite-icon,
+            .theme-icon {
+                @apply w-6 h-6;
+            }
+
+            .weather-icon {
+                @apply w-16 h-16;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors duration-200">
+    <div class="w-full min-h-screen bg-white dark:bg-gray-900 transition-all duration-300">
+        <div class="container mx-auto px-4 sm:px-6 py-4">
+            <!-- Header -->
+            <header class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+                <a href="/" class="hover:opacity-80 transition-opacity">
+                    <h1
+                        class="text-2xl sm:text-3xl md:text-4xl font-bold text-blue-600 dark:text-blue-400 text-center sm:text-left">
+                        Weather Dashboard</h1>
+                </a>
+                <div class="flex items-center gap-4">
+                    <button id="unitToggle"
+                        class="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg flex items-center gap-2">
+                        <span id="unitText">°C</span>
+                    </button>
+                    <button id="themeToggle" class="p-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg">
+                        <img id="themeIcon" src="assets/icon/moon.svg" alt="theme icon" class="theme-icon">
+                    </button>
+                </div>
+            </header>
+
+            <!-- Search Section -->
+            <div class="bg-gray-50 dark:bg-gray-800 dark:text-white rounded-lg shadow-md p-4 mb-6">
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex-1 autocomplete-container">
+                        <input type="text" id="searchInput" placeholder="Search city..."
+                            class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-lg px-4 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                        <div id="suggestions" class="suggestions-list"></div>
+                    </div>
+                    <button id="searchBtn"
+                        class="w-full sm:w-auto px-6 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition">
+                        Search
+                    </button>
+                </div>
+            </div>
+
+            <!-- Current Weather -->
+            <div id="currentWeather"
+                class="bg-gray-50 dark:bg-gray-800 dark:text-white rounded-lg shadow-md p-4 sm:p-6 mb-6">
+                <!-- Weather content will be injected here -->
+            </div>
+
+            <!-- Favorites Section -->
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Favorite Cities</h2>
+                <div id="favorites" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Favorite cities will be injected here -->
+                </div>
+            </div>
+
+            <!-- Forecast Section -->
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">5-Day Forecast</h2>
+                <div id="forecast" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                    <!-- Forecast content will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Toast -->
+    <div id="errorToast"
+        class="fixed bottom-4 right-4 bg-red-500 dark:bg-red-600 text-white px-6 py-3 rounded-lg hidden">
+        <!-- Error message will be injected here -->
+    </div>
+
+    <!-- Add skeleton template (initially hidden) -->
+    <template id="weatherSkeleton">
+        <div class="animate-pulse">
+            <div class="flex items-center justify-between bg-gray-50 dark:bg-gray-800 p-6 rounded-lg">
+                <div class="flex-1">
+                    <div class="skeleton h-8 w-3/4 rounded mb-3"></div>
+                    <div class="skeleton h-5 w-1/2 rounded"></div>
+                </div>
+                <div class="skeleton h-10 w-10 rounded-full ml-4"></div>
+            </div>
+            <div class="flex items-center gap-6 mt-4 bg-gray-50 dark:bg-gray-800 p-6 rounded-lg">
+                <div class="skeleton w-24 h-24 rounded"></div>
+                <div class="flex-1">
+                    <div class="skeleton h-12 w-32 rounded mb-3"></div>
+                    <div class="skeleton h-6 w-40 rounded"></div>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mt-4">
+                <div class="text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div class="skeleton h-5 w-24 mx-auto mb-3 rounded"></div>
+                    <div class="skeleton h-8 w-20 mx-auto rounded"></div>
+                </div>
+                <div class="text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div class="skeleton h-5 w-24 mx-auto mb-3 rounded"></div>
+                    <div class="skeleton h-8 w-20 mx-auto rounded"></div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="forecastSkeleton">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+            ${[...Array(5)].map(() => `
+            <div class="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg shadow-md text-center">
+                <div class="skeleton h-6 w-24 mx-auto mb-3 rounded-md"></div>
+                <div class="skeleton w-16 h-16 mx-auto my-4 rounded-md"></div>
+                <div class="skeleton h-8 w-20 mx-auto mb-2 rounded-md"></div>
+                <div class="skeleton h-5 w-32 mx-auto rounded-md"></div>
+            </div>
+            `).join('')}
+        </div>
+    </template>
+
+    <script type="module" src="script.js"></script>
+</body>
+
+</html>
