@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager - Student Edition</title>
+    <link rel="icon" type="image/x-icon" href="assets/icon/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <style>
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            opacity: 0;
+            display: none;
+        }
+
+        input[type="date"]::-moz-calendar-picker-indicator,
+        input[type="datetime-local"]::-moz-calendar-picker-indicator {
+            opacity: 0;
+            display: none;
+        }
+
+        input[type="date"]::-webkit-input-decoration-container,
+        input[type="datetime-local"]::-webkit-input-decoration-container {
+            display: none;
+        }
+
+        input:not(:placeholder-shown),
+        textarea:not(:placeholder-shown) {
+            color: #000 !important;
+        }
+
+        input,
+        textarea {
+            color: #9CA3AF;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #2563eb !important;
+            border-width: 2px;
+            box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.1);
+        }
+
+        input:focus-visible,
+        textarea:focus-visible {
+            outline: none;
+        }
+
+        input:focus-visible,
+        textarea:focus-visible {
+            outline-offset: 0;
+        }
+
+        @media (max-width: 768px) {
+            .button-text {
+                display: none;
+            }
+
+            .filter-container {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .date-picker-group {
+                width: 100%;
+                display: flex;
+                flex-direction: row;
+                gap: 0.5rem;
+            }
+
+            .date-picker-group .relative {
+                width: 50%;
+            }
+
+            .button-group {
+                display: flex;
+                gap: 0.5rem;
+                width: 100%;
+            }
+
+            .button-group>* {
+                flex: 1;
+            }
+
+            .search-filter-group {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .table-container {
+                margin: 0 -1rem;
+                width: calc(100% + 2rem);
+                overflow-x: auto;
+            }
+        }
+
+        .table-container {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .table-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        @media (min-width: 769px) {
+            .task-table {
+                min-width: 0 !important;
+            }
+        }
+
+        .mobile-table {
+            display: none;
+        }
+
+        .mobile-card {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .mobile-field {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .mobile-label {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .mobile-value {
+            color: #4b5563;
+        }
+
+        @media (max-width: 1024px) {
+            .desktop-table {
+                display: none;
+            }
+
+            .mobile-table {
+                display: block;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .button-text {
+                display: none;
+            }
+
+            .icon-button {
+                width: 40px !important;
+                padding: 0 !important;
+                justify-content: center;
+                aspect-ratio: 1;
+            }
+
+            .icon-button img {
+                margin: 0;
+            }
+
+            .search-filter-group {
+                flex: 1;
+            }
+
+            #searchInput {
+                min-width: 0;
+            }
+        }
+
+        .filter-blue {
+            filter: invert(31%) sepia(98%) saturate(1640%) hue-rotate(213deg) brightness(96%) contrast(107%);
+        }
+
+        input[type="radio"] {
+            appearance: none;
+            width: 1.2rem;
+            height: 1.2rem;
+            border: 2px solid #2563eb;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            position: relative;
+            cursor: pointer;
+        }
+
+        input[type="radio"]:checked {
+            background-color: #2563eb;
+            border-color: #2563eb;
+        }
+
+        input[type="radio"]:checked::after {
+            content: '';
+            position: absolute;
+            width: 0.5rem;
+            height: 0.5rem;
+            background-color: white;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        input[type="radio"]:focus {
+            outline: 2px solid rgba(37, 99, 235, 0.2);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto p-4 max-w-4xl">
+        <h1 class="text-3xl md:text-4xl font-bold mb-6 text-center text-blue-600 cursor-pointer hover:text-blue-700"
+            onclick="clearBrowserCache()">
+            Aplikasi Manajemen Tugas Mahasiswa
+        </h1>
+
+        <div class="grid grid-cols-3 gap-4 mb-3">
+            <div class="bg-white rounded-lg border border-blue-600 flex items-center justify-center h-12 px-4">
+                <div class="flex items-center gap-2">
+                    <img src="assets/icon/not-done-icon.svg" alt="Belum Selesai" class="h-4 w-4 filter-red">
+                    <span class="text-red-500 hidden sm:inline">Belum Selesai:</span>
+                    <span class="text-base font-bold text-red-500" id="notDoneCount">0</span>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg border border-blue-600 flex items-center justify-center px-4 h-12">
+                <div class="flex items-center gap-2">
+                    <img src="assets/icon/pending-icon.svg" alt="Berjalan" class="h-4 w-4 filter-orange">
+                    <span class="text-orange-500 hidden sm:inline">Berjalan:</span>
+                    <span class="text-base font-bold text-orange-500" id="pendingCount">0</span>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg border border-blue-600 flex items-center justify-center px-4 h-12">
+                <div class="flex items-center gap-2">
+                    <img src="assets/icon/done-icon.svg" alt="Selesai" class="h-4 w-4 filter-green">
+                    <span class="text-green-600 hidden sm:inline">Selesai:</span>
+                    <span class="text-base font-bold text-green-600" id="completedCount">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+            <div class="filter-container flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full">
+                <div class="flex items-center gap-2 w-full">
+                    <div class="flex items-center gap-2">
+                        <button
+                            class="h-10 bg-blue-600 text-white px-4 rounded-lg hover:bg-blue-700 flex items-center gap-2 border border-white justify-center icon-button flex-shrink-0 sm:w-auto"
+                            onclick="openModal('modalTambah')">
+                            <img src="assets/icon/plus-icon.svg" alt="Tambah" class="h-5 w-5 filter invert">
+                            <span class="button-text sm:inline">Tambah</span>
+                        </button>
+
+                        <div class="relative hidden md:block">
+                            <input type="date" id="startDate" placeholder="Tanggal Awal"
+                                class="w-full appearance-none border border-blue-600 rounded-lg h-10 px-3 pr-10">
+                            <img src="assets/icon/first-date-icon.svg" alt="Tanggal Awal"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 filter-blue">
+                        </div>
+
+                        <div class="relative hidden md:block">
+                            <input type="date" id="endDate" placeholder="Tanggal Akhir"
+                                class="w-full appearance-none border border-blue-600 rounded-lg h-10 px-3 pr-10">
+                            <img src="assets/icon/end-date-icon.svg" alt="Tanggal Akhir"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 filter-blue">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 md:ml-auto flex-1">
+                        <div class="relative w-full">
+                            <input type="text" id="searchInput" placeholder="Cari tugas..."
+                                class="w-full border border-blue-600 rounded-lg h-10 px-3 pr-10">
+                            <img src="assets/icon/search-icon.svg" alt="Cari"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 filter-blue">
+                        </div>
+
+                        <button onclick="openModal('modalFilter')"
+                            class="h-10 bg-blue-600 text-white px-4 rounded-lg hover:bg-blue-700 border border-white flex items-center justify-center whitespace-nowrap icon-button flex-shrink-0">
+                            <img src="assets/icon/filter-icon.svg" alt="Filter" class="h-5 w-5 filter invert">
+                            <span class="button-text ml-2">Filter</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex md:hidden items-center gap-2 w-full">
+                    <div class="relative flex-1 min-w-0"> <input type="date" id="startDate-mobile"
+                            placeholder="Tanggal Awal"
+                            class="w-full appearance-none border border-blue-600 rounded-lg h-10 px-2 text-sm" <img
+                            src="assets/icon/first-date-icon.svg" alt="Tanggal Awal"
+                            class="absolute right-1 top-1/2 -translate-y-1/2 h-5 w-5 filter-blue">
+                    </div>
+                    <div class="relative flex-1 min-w-0"> <input type="date" id="endDate-mobile"
+                            placeholder="Tanggal Akhir"
+                            class="w-full appearance-none border border-blue-600 rounded-lg h-10 px-2 text-sm" <img
+                            src="assets/icon/end-date-icon.svg" alt="Tanggal Akhir"
+                            class="absolute right-1 top-1/2 -translate-y-1/2 h-5 w-5 filter-blue">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-2">
+            <div class="desktop-table bg-white rounded-lg shadow-md overflow-hidden">
+                <table class="task-table w-full" id="taskTable">
+                    <thead class="bg-blue-600 text-white">
+                        <tr>
+                            <th class="p-4 border-r text-center">No</th>
+                            <th class="p-4 border-r text-center">Nama Tugas</th>
+                            <th class="p-4 border-r text-center">Mata Kuliah</th>
+                            <th class="p-4 border-r text-center">Deadline</th>
+                            <th class="p-4 border-r text-center">Status</th>
+                            <th class="p-4 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="taskTableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mobile-table" id="taskMobileTable">
+            </div>
+        </div>
+
+        <div id="taskPagination" class="mt-3"></div>
+
+        <div id="modalTambah" class="fixed inset-0 bg-black bg-opacity-30 hidden items-center justify-center"
+            onclick="if(event.target === this) closeModal('modalTambah')">
+            <div class="bg-white p-6 rounded-lg w-96">
+                <h3
+                    class="text-xl font-bold mb-4 bg-blue-600 text-white rounded-t-lg px-4 py-3 -mx-6 -mt-6 text-center">
+                    Tambah Tugas</h3>
+                <form id="addTaskForm">
+                    <div class="mb-4">
+                        <label class="block mb-1">Nama Tugas</label>
+                        <input type="text" id="taskName"
+                            class="w-full border border-blue-600 rounded-lg h-10 px-3 focus:border-blue-700 focus:border-2 focus:outline-none placeholder:text-gray-400"
+                            placeholder="Nama Tugas" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block mb-1">Mata Kuliah</label>
+                        <input type="text" id="course"
+                            class="w-full border border-blue-600 rounded-lg h-10 px-3 focus:border-blue-700 focus:border-2 focus:outline-none placeholder:text-gray-400"
+                            placeholder="Mata Kuliah" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block mb-1">Deadline</label>
+                        <div class="relative">
+                            <input type="datetime-local" id="deadline" placeholder="Tanggal Deadline"
+                                class="w-full appearance-none border border-blue-600 rounded-lg h-10 px-3 pr-10 focus:border-blue-700 focus:border-2 focus:outline-none placeholder:text-gray-400"
+                                required>
+                            <img src="assets/icon/calendar-icon.svg" alt="Calendar"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 filter-blue">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block mb-1">Status</label>
+                        <div class="flex justify-center">
+                            <button type="button" id="addStatusBadge"
+                                class="w-full bg-white border border-blue-600 px-3 py-2 rounded font-semibold text-center"
+                                onclick="toggleAddStatus()">
+                                Belum Selesai
+                            </button>
+                        </div>
+                        <input type="hidden" id="addStatus" value="Belum Selesai">
+                    </div>
+                    <div class="flex justify-end gap-2">
+                        <button type="button"
+                            class="px-4 py-2 bg-red-500 text-white rounded w-1/2 flex items-center justify-center gap-2"
+                            onclick="closeModal('modalTambah')">
+                            <img src="assets/icon/cancel-icon.svg" alt="Cancel" class="h-4 w-4 filter invert">
+                            Batal
+                        </button>
+                        <button type="submit"
+                            class="px-4 py-2 bg-blue-600 text-white rounded w-1/2 flex items-center justify-center gap-2">
+                            <img src="assets/icon/save-icon.svg" alt="Save" class="h-4 w-4 filter invert">
+                            Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="modalEdit" class="fixed inset-0 bg-black bg-opacity-30 hidden items-center justify-center"
+            onclick="if(event.target === this) closeModal('modalEdit')">
+            <div class="bg-white p-6 rounded-lg w-96">
+                <h3
+                    class="text-xl font-bold mb-4 bg-blue-600 text-white rounded-t-lg px-4 py-3 -mx-6 -mt-6 text-center">
+                    Edit Tugas</h3>
+                <form id="editTaskForm">
+                    <input type="hidden" id="editTaskId">
+                    <div class="mb-4">
+                        <label class="block mb-1">Nama Tugas</label>
+                        <input type="text" id="editTaskName"
+                            class="w-full border border-blue-600 rounded-lg h-10 px-3 focus:border-blue-700 focus:border-2 focus:outline-none placeholder:text-gray-400"
+                            placeholder="Nama Tugas" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block mb-1">Mata Kuliah</label>
+                        <input type="text" id="editCourse"
+                            class="w-full border border-blue-600 rounded-lg h-10 px-3 focus:border-blue-700 focus:border-2 focus:outline-none placeholder:text-gray-400"
+                            placeholder="Mata Kuliah" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block mb-1">Deadline</label>
+                        <div class="relative">
+                            <input type="datetime-local" id="editDeadline" placeholder="dd/mm/yy"
+                                class="w-full appearance-none border border-blue-600 rounded-lg h-10 px-3 pr-10 focus:border-blue-700 focus:border-2 focus:outline-none placeholder:text-gray-400"
+                                required>
+                            <img src="assets/icon/calendar-icon.svg" alt="Calendar"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 filter-blue">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block mb-1">Status</label>
+                        <div class="flex justify-center">
+                            <button type="button" id="editStatusBadge"
+                                class="w-full bg-white border border-blue-600 px-3 py-2 rounded font-semibold text-center"
+                                onclick="toggleEditStatus()">
+                                Belum Selesai
+                            </button>
+                        </div>
+                        <input type="hidden" id="editStatus" value="Belum Selesai">
+                    </div>
+                    <div class="flex justify-end gap-2">
+                        <button type="button"
+                            class="px-4 py-2 bg-red-500 text-white rounded w-1/2 flex items-center justify-center gap-2"
+                            onclick="deleteTask()">
+                            <img src="assets/icon/delete-icon.svg" alt="Delete" class="h-4 w-4 filter invert">
+                            Hapus
+                        </button>
+                        <button type="submit"
+                            class="px-4 py-2 bg-blue-600 text-white rounded w-1/2 flex items-center justify-center gap-2">
+                            <img src="assets/icon/save-icon.svg" alt="Save" class="h-4 w-4 filter invert">
+                            Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="modalFilter" class="fixed inset-0 bg-black bg-opacity-30 hidden items-center justify-center"
+            onclick="if(event.target === this) closeModal('modalFilter')">
+            <div class="bg-white p-6 rounded-lg w-96">
+                <h3
+                    class="text-xl font-bold mb-4 bg-blue-600 text-white rounded-t-lg px-4 py-3 -mx-6 -mt-6 text-center">
+                    Filter Tugas</h3>
+
+                <form id="filterForm" class="space-y-4">
+                    <div>
+                        <label class="font-semibold block mb-2">Nama Tugas</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2">
+                                <input type="radio" name="nameSort" value="nameAsc" class="text-blue-600">
+                                Nama Tugas (A-Z)
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input type="radio" name="nameSort" value="nameDesc" class="text-blue-600">
+                                Nama Tugas (Z-A)
+                            </label>
+                        </div>
+
+                        <label class="font-semibold block mb-2 mt-4">Mata Kuliah</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2">
+                                <input type="radio" name="courseSort" value="courseAsc" class="text-blue-600">
+                                Mata Kuliah (A-Z)
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input type="radio" name="courseSort" value="courseDesc" class="text-blue-600">
+                                Mata Kuliah (Z-A)
+                            </label>
+                        </div>
+
+                        <label class="font-semibold block mb-2 mt-4">Deadline Tugas</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2">
+                                <input type="radio" name="deadlineSort" value="deadlineAsc" class="text-blue-600">
+                                Deadline Terlama
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input type="radio" name="deadlineSort" value="deadlineDesc" class="text-blue-600">
+                                Deadline Terbaru
+                            </label>
+                        </div>
+
+                        <label class="font-semibold block mb-2 mt-4">Status Tugas</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2">
+                                <input type="radio" name="statusFilter" value="Belum Selesai" class="text-blue-600">
+                                Status: Belum Selesai
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input type="radio" name="statusFilter" value="Berjalan" class="text-blue-600">
+                                Status: Berjalan
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input type="radio" name="statusFilter" value="Selesai" class="text-blue-600">
+                                Status: Selesai
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-2 pt-4">
+                        <button type="button"
+                            class="w-1/2 px-4 py-2 bg-red-500 text-white rounded flex items-center justify-center gap-2"
+                            onclick="closeModal('modalFilter')">
+                            <img src="assets/icon/cancel-icon.svg" alt="Cancel" class="h-4 w-4 filter invert">
+                            Tutup
+                        </button>
+                        <button type="submit"
+                            class="w-1/2 px-4 py-2 bg-blue-600 text-white rounded flex items-center justify-center gap-2">
+                            <img src="assets/icon/save-icon.svg" alt="Save" class="h-4 w-4 filter invert">
+                            Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <script src="script.js"></script>
+</body>
+
+</html>
