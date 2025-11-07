@@ -1,0 +1,58 @@
+{
+  "mahasiswa": [
+    {
+      "nama": "Andi Pratama",
+      "nim": "123140001",
+      "nilai_uts": 85,
+      "nilai_uas": 90,
+      "nilai_tugas": 88,
+      "nilai_akhir": 87.9,
+      "grade": "A"
+    },
+    {
+      "nama": "Budi Santoso",
+      "nim": "123140002",
+      "nilai_uts": 75,
+      "nilai_uas": 78,
+      "nilai_tugas": 80,
+      "nilai_akhir": 77.7,
+      "grade": "B"
+    },
+    {
+      "nama": "Citra Dewi",
+      "nim": "123140003",
+      "nilai_uts": 65,
+      "nilai_uas": 70,
+      "nilai_tugas": 75,
+      "nilai_akhir": 70.0,
+      "grade": "B"
+    },
+    {
+      "nama": "Deni Kurniawan",
+      "nim": "123140004",
+      "nilai_uts": 55,
+      "nilai_uas": 60,
+      "nilai_tugas": 65,
+      "nilai_akhir": 60.0,
+      "grade": "C"
+    },
+    {
+      "nama": "Eka Putri",
+      "nim": "123140005",
+      "nilai_uts": 45,
+      "nilai_uas": 50,
+      "nilai_tugas": 55,
+      "nilai_akhir": 50.0,
+      "grade": "D"
+    },
+    {
+      "nama": "Reyhan Capri Moraga",
+      "nim": "123140022",
+      "nilai_uts": 74.0,
+      "nilai_uas": 85.0,
+      "nilai_tugas": 95.0,
+      "nilai_akhir": 84.7,
+      "grade": "A"
+    }
+  ]
+}
