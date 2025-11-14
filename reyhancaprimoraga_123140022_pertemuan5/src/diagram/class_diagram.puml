@@ -1,0 +1,132 @@
+@startuml Sistem_Manajemen_Perpustakaan
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #F0F0FF
+skinparam classBorderColor #0033CC
+skinparam arrowColor #0033CC
+skinparam noteBorderColor #FF6B6B
+skinparam noteBackgroundColor #FFFACD
+skinparam classAttributeIconSize 0
+skinparam classArrowColor #0033CC
+
+title Sistem Manajemen Perpustakaan Sederhana\n<i>Class Diagram - OOP Implementation</i>
+
+' ========== ABSTRACT CLASS ==========
+abstract class LibraryItem {
+    {field} # _id: int
+    {field} # _title: str
+    --
+    {method} + {property} title: str
+    {method} + {property} item_id: int
+    {method} + {abstract} display_info(): void
+    {method} + {abstract} get_item_type(): str
+}
+
+' ========== CONCRETE CLASSES - BOOK ==========
+class Book {
+    {field} # _author: str
+    {field} # _pages: int
+    --
+    {method} + {property} author: str
+    {method} + {property} pages: str
+    {method} + display_info(): void
+    {method} + get_item_type(): str
+    {method} + __str__(): str
+}
+
+' ========== CONCRETE CLASSES - MAGAZINE ==========
+class Magazine {
+    {field} # _issue: str
+    {field} # _month: str
+    --
+    {method} + {property} issue: str
+    {method} + {property} month: str
+    {method} + display_info(): void
+    {method} + get_item_type(): str
+    {method} + __str__(): str
+}
+
+' ========== LIBRARY MANAGER CLASS ==========
+class Library {
+    {field} - __items: list[LibraryItem]
+    --
+    {method} + add_item(item: LibraryItem): void
+    {method} + list_items(): void
+    {method} + search_by_title(keyword: str): list
+    {method} + search_by_id(item_id: int): LibraryItem | None
+    {method} + get_total_items(): int
+}
+
+' ========== RELATIONSHIPS ==========
+Book --|> LibraryItem : <<extends>>
+Magazine --|> LibraryItem : <<extends>>
+Library "1" o-- "*" LibraryItem : manages
+
+' ========== NOTES ==========
+note right of LibraryItem
+    **<<Abstract Base Class>>**
+    Mendefinisikan interface umum
+    untuk semua item perpustakaan
+    
+    Menggunakan: abc.ABC
+    Access: protected attributes (_)
+end note
+
+note right of Book
+    **Concrete Subclass**
+    Implementasi untuk item BUKU
+    
+    Override:
+    - display_info()
+    - get_item_type()
+    
+    Feature: Property decorator
+    untuk encapsulation
+end note
+
+note right of Magazine
+    **Concrete Subclass**
+    Implementasi untuk item MAJALAH
+    
+    Override:
+    - display_info()
+    - get_item_type()
+    
+    Feature: Property decorator
+    untuk encapsulation
+end note
+
+note right of Library
+    **Manager Class**
+    Mengelola koleksi perpustakaan
+    
+    Encapsulation:
+    - Private __items list
+    - Polymorphism via display_info()
+    
+    Aggregation: 1 Library : Many Items
+end note
+
+' ========== LEGEND ==========
+note bottom
+    **📋 LEGEND - Penjelasan Simbol UML:**
+    
+    **Access Modifiers:**
+    • "+" = Public (akses dari mana saja)
+    • "#" = Protected (akses dari class & subclass)
+    • "-" = Private (akses hanya dari class itu sendiri)
+    
+    **Type Indicators:**
+    • {abstract} = Method abstrak (wajib di-override subclass)
+    • {property} = Python @property decorator (read-only)
+    • {field} = Attribute/field
+    • {method} = Method/function
+    
+    **Relationships:**
+    • "--|>" = Inheritance/Generalization (is-a: "Book IS-A LibraryItem")
+    • "o--" = Aggregation (has-many: "Library HAS MANY Items")
+    • "*" = Multiplicity (banyak = 0 atau lebih)
+    • "1" = Cardinality (satu = exactly 1)
+end note
+
+@enduml
