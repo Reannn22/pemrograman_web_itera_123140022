@@ -26,7 +26,7 @@ Repositori ini berisi kumpulan tugas praktikum mata kuliah Pengembangan Aplikasi
 - [x] Pertemuan 3: Variabel & Kondisional (From UTS)
 - [x] Pertemuan 4: Loop & Fungsi
 - [x] Pertemuan 5: Array & Objek
-- [ ] Pertemuan 6: DOM & API
+- [x] Pertemuan 6: DOM & API
 
 ---
 
